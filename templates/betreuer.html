@@ -1,0 +1,21 @@
+<table>
+    <tr><th>Name</th><th>Email</th><th>Status</th><th>Aktionen</th></tr>
+    {% for r in rows %}
+    <tr class="{% if not r.aktiv %}inactive{% endif %}">
+        <td>{{ r.name }}</td><td>{{ r.email }}</td><td>{{ 'Aktiv' if r.aktiv else 'Inaktiv' }}</td>
+        <td><button class="btn" hx-get="/tab/betreuer?edit={{ r.id }}" hx-target="#content">Bearbeiten</button></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div class="form-panel">
+    <h3>{% if edit_item %}Bearbeiten{% else %}Neu anlegen{% endif %}</h3>
+    <form hx-post="/api/betreuer" hx-target="#content">
+        <input type="hidden" name="id" value="{{ edit_item.id if edit_item else '' }}">
+        <label>Name</label><input type="text" name="name" value="{{ edit_item.name if edit_item else '' }}" required>
+        <label>Email</label><input type="email" name="email" value="{{ edit_item.email if edit_item else '' }}" required>
+        <label><input type="checkbox" name="aktiv" class="inline-checkbox" {% if not edit_item or edit_item.aktiv %}checked{% endif %}> Aktiv</label>
+        <button type="submit" class="btn">Speichern</button>
+        {% if edit_item %}<button type="button" class="btn btn-sec" hx-get="/tab/betreuer" hx-target="#content">Abbrechen</button>{% endif %}
+    </form>
+</div>

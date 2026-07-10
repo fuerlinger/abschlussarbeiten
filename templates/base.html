@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>MNM Abschlussarbeiten</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; line-height: 1.5; color: #333; }
+        nav button { padding: 10px 15px; margin-right: 5px; cursor: pointer; border: 1px solid #ccc; background: #eee; }
+        nav button.active { background: #fff; border-bottom: 2px solid #0056b3; }
+        #content { margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 4px; background: #fafafa; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff;}
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .inactive { color: #888; background-color: #f9f9f9; text-decoration: line-through; }
+        .form-panel { background: #fff; border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .form-panel input, .form-panel select, .form-panel textarea { margin-bottom: 10px; padding: 5px; width: 100%; box-sizing: border-box; }
+        .form-panel label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .inline-checkbox { display: inline-block !important; width: auto !important; margin-right: 10px; }
+        .btn { padding: 8px 12px; background: #0056b3; color: white; border: none; cursor: pointer; border-radius: 3px; }
+        .btn-danger { background: #dc3545; }
+        .btn-sec { background: #6c757d; }
+        ul.sortable { list-style-type: none; padding: 0; margin: 0; }
+        ul.sortable li { background: #e9ecef; margin: 5px 0; padding: 8px; cursor: grab; border: 1px solid #ccc; }
+        .ghost { opacity: 0.4; }
+    </style>
+</head>
+<body>
+    <h1>MNM Abschlussarbeiten</h1>
+    {% block content %}{% endblock %}
+</body>
+</html>

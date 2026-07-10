@@ -1,0 +1,30 @@
+<h3>Archivierte Abschlussarbeiten</h3>
+<table>
+    <tr><th>ID</th><th>Titel</th><th>Typ</th></tr>
+    {% for a in arbeiten %}
+    <tr><td>{{ a.id }}</td><td>{{ a.titel }}</td><td>{{ a.typ }}</td></tr>
+    {% else %}
+    <tr><td colspan="3">Keine archivierten Arbeiten</td></tr>
+    {% endfor %}
+</table>
+
+<h3>Archivierte Oberseminare</h3>
+<table>
+    <tr><th>ID</th><th>Datum/Uhrzeit</th><th>Ort</th></tr>
+    {% for s in seminare %}
+    <tr><td>{{ s.id }}</td><td>{{ s.dt | datetime_de }}</td><td>{{ s.location }}</td></tr>
+    {% else %}
+    <tr><td colspan="3">Keine archivierten Oberseminare</td></tr>
+    {% endfor %}
+</table>
+
+<h3>Archivierte Themen</h3>
+<table>
+    <tr><th>ID</th><th>Titel</th></tr>
+    {% for t in themen %}
+    <tr><td>{{ t.id }}</td><td>{{ t.titel }}
+	<button class="btn btn-sec" hx-post="/api/dearchive/themen/{{ t.id }}" hx-target="closest tr" " >Wiederherstellen</button> </td></tr>
+    {% else %}
+    <tr><td colspan="2">Keine archivierten Themen</td></tr>
+    {% endfor %}
+</table>

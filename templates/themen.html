@@ -1,0 +1,51 @@
+<div class="form-panel">
+    <h3>{% if edit_item %}Bearbeiten{% else %}Neu anlegen{% endif %}</h3>
+    <form hx-post="/api/themen" hx-target="#content">
+        <input type="hidden" name="id" value="{{ edit_item.id if edit_item else '' }}">
+        <label>Titel</label><input type="text" name="titel" value="{{ edit_item.titel if edit_item else '' }}" required>
+        
+        <label><input type="checkbox" name="ba" class="inline-checkbox" {% if edit_item and edit_item.ba %}checked{% endif %}> BA</label>
+        <label><input type="checkbox" name="ma" class="inline-checkbox" {% if edit_item and edit_item.ma %}checked{% endif %}> MA</label>
+        <label><input type="checkbox" name="sichtbar" class="inline-checkbox" {% if not edit_item or edit_item.sichtbar %}checked{% endif %}> Sichtbar</label>
+        <label><input type="checkbox" name="vergeben" class="inline-checkbox" {% if edit_item and edit_item.vergeben %}checked{% endif %}> Vergeben</label>
+        
+        <label>Aufgabensteller</label>
+        <select name="aufgabensteller_id">
+            <option value="">Bitte wählen...</option>
+            {% for a in aufgabensteller %}
+            <option value="{{ a.id }}" {% if edit_item and edit_item.aufgabensteller_id == a.id %}selected{% endif %}>{{ a.name }}</option>
+            {% endfor %}
+        </select>
+        
+        <label>Betreuer (Mehrfachauswahl mit Strg/Cmd)</label>
+        <select name="betreuer_ids" multiple size="4">
+            {% for b in betreuer %}
+            <option value="{{ b.id }}" {% if b.id in edit_betreuer_ids %}selected{% endif %}>{{ b.name }}</option>
+            {% endfor %}
+        </select>
+        
+        <label>Beschreibung (Markdown)</label>
+        <textarea name="beschreibung" rows="5">{{ edit_item.beschreibung if edit_item else '' }}</textarea>
+        
+        <button type="submit" class="btn">Speichern</button>
+        {% if edit_item %}<button type="button" class="btn btn-sec" hx-get="/tab/themen" hx-target="#content">Abbrechen</button>{% endif %}
+    </form>
+</div>
+<table>
+    <tr><th>Titel</th><th>Typ</th><th>Sichtbar</th><th>Vergeben</th><th>Aufgabensteller</th><th>Betreuer</th><th>Aktionen</th></tr>
+    {% for r in rows %}
+    <tr>
+        <td>{{ r.titel }}</td>
+        <td>{% if r.ba %}BA{% endif %} {% if r.ma %}MA{% endif %}</td>
+        <td>{{ 'Ja' if r.sichtbar else 'Nein' }}</td>
+        <td>{{ 'Ja' if r.vergeben else 'Nein' }}</td>
+        <td>{{ r.aufgabensteller_name }}</td>
+        <td>{{ r.betreuer_names }}</td>
+        <td>
+            <button class="btn" hx-get="/tab/themen?edit={{ r.id }}" hx-target="#content">Bearbeiten</button>
+            <button class="btn btn-sec" hx-post="/api/archive/themen/{{ r.id }}" hx-target="#content">Archivieren</button>
+            <button class="btn btn-danger" hx-delete="/api/delete/themen/{{ r.id }}" hx-target="#content" hx-confirm="Wirklich löschen?">Löschen</button>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

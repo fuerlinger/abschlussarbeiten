@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<nav id="tabs" hx-target="#content">
+    <button hx-get="/tab/aufgabensteller">Aufgabensteller / Prüfer</button>
+    <button hx-get="/tab/betreuer">Betreuer</button>
+    <button hx-get="/tab/studenten">Studenten</button>
+    <button hx-get="/tab/oberseminare">Oberseminare</button>
+    <button hx-get="/tab/themen">Themen</button>
+    <button hx-get="/tab/abschlussarbeiten">Abschlussarbeiten</button>
+    <button hx-get="/tab/archiv">Archiv</button>
+</nav>
+<main id="content" hx-get="/tab/aufgabensteller" hx-trigger="load"></main>
+{% endblock %}
