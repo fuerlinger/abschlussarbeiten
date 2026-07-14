@@ -1,21 +1,24 @@
 CREATE TABLE IF NOT EXISTS aufgabensteller (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    email TEXT NOT NULL
+    email TEXT NOT NULL,
+    web TEXT,
+    archiviert INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS betreuer (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
-    aktiv INTEGER DEFAULT 1
+    web TEXT,
+    archiviert INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS studenten (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
-    aktiv INTEGER DEFAULT 1
+    archiviert INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS oberseminare (

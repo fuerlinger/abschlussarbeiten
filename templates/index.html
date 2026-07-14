@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+<!--
 <nav id="tabs" hx-target="#content">
     <button hx-get="/tab/aufgabensteller">Aufgabensteller / Prüfer</button>
     <button hx-get="/tab/betreuer">Betreuer</button>
@@ -10,4 +11,34 @@
     <button hx-get="/tab/archiv">Archiv</button>
 </nav>
 <main id="content" hx-get="/tab/aufgabensteller" hx-trigger="load"></main>
+-->
+<nav id="tabs" hx-target="#content">
+    <button class="status" 
+            _="on click take .active from <button/>" 
+              hx-get="/tab/status">Status</button>
+      
+    <button _="on click take .active from <button/>" 
+            hx-get="/tab/aufgabensteller">Aufgabensteller / Prüfer</button>
+            
+    <button _="on click take .active from <button/>" 
+            hx-get="/tab/betreuer">Betreuer</button>
+            
+    <button _="on click take .active from <button/>" 
+            hx-get="/tab/studenten">Studenten</button>
+
+    <button _="on click take .active from <button/>" 
+            hx-get="/tab/abschlussarbeiten">Abschlussarbeiten</button>
+    
+    <button _="on click take .active from <button/>" 
+            hx-get="/tab/oberseminare">Oberseminare</button>
+            
+    <button _="on click take .active from <button/>" 
+            hx-get="/tab/themen">Themen</button>
+            
+    <button _="on click take .active from <button/>" 
+            hx-get="/tab/archiv">Archiv</button>
+</nav>
+
+<main id="content" hx-get="/tab/status" hx-trigger="load"></main>
+
 {% endblock %}

@@ -3,7 +3,7 @@ import sqlite3
 import os
 import markdown
 from datetime import datetime
-from flask import Flask, render_template, request, g, redirect
+from flask import Flask, render_template, request, g, redirect, make_response
 
 app = Flask(__name__)
 DATABASE = 'mnm.db'
@@ -52,19 +52,30 @@ def index():
 def tab(name):
     db = get_db()
     edit_id = request.args.get('edit', type=int)
+
+    if name == 'status':
+
+        status_data = {
+            "aufgabensteller_gesamt" : 0
+        }
+        result = db.execute('SELECT COUNT(*) FROM aufgabensteller WHERE archiviert=0').fetchone()
+        status_data["aufgabensteller_gesamt"] = result[0]
     
-    if name == 'aufgabensteller':
-        rows = db.execute('SELECT * FROM aufgabensteller').fetchall()
+        
+        return render_template('status.html')
+    
+    elif name == 'aufgabensteller':
+        rows = db.execute('SELECT * FROM aufgabensteller WHERE archiviert=0').fetchall()
         edit_item = db.execute('SELECT * FROM aufgabensteller WHERE id=?', (edit_id,)).fetchone() if edit_id else None
         return render_template('aufgabensteller.html', rows=rows, edit_item=edit_item)
         
     elif name == 'betreuer':
-        rows = db.execute('SELECT * FROM betreuer').fetchall()
+        rows = db.execute('SELECT * FROM betreuer WHERE archiviert=0').fetchall()
         edit_item = db.execute('SELECT * FROM betreuer WHERE id=?', (edit_id,)).fetchone() if edit_id else None
         return render_template('betreuer.html', rows=rows, edit_item=edit_item)
-        
+
     elif name == 'studenten':
-        rows = db.execute('SELECT * FROM studenten').fetchall()
+        rows = db.execute('SELECT * FROM studenten WHERE archiviert=0').fetchall()
         edit_item = db.execute('SELECT * FROM studenten WHERE id=?', (edit_id,)).fetchone() if edit_id else None
         return render_template('studenten.html', rows=rows, edit_item=edit_item)
         
@@ -78,7 +89,7 @@ def tab(name):
             # Find presentations assigned to this seminar (Antritts or Abschluss) 
             # joined with manual sorting order
             pres = db.execute('''
-                SELECT a.id, a.titel, s.name as student_name 
+                SELECT a.id, a.titel, s.name as student_name, a.abschlussvortrag_id, a.antrittsvortrag_id, a.typ
                 FROM abschlussarbeiten a
                 LEFT JOIN studenten s ON a.student_id = s.id
                 LEFT JOIN oberseminar_presentations op ON a.id = op.arbeit_id AND op.oberseminar_id = ?
@@ -100,7 +111,7 @@ def tab(name):
             edit_betreuer_ids = [b['betreuer_id'] for b in db.execute('SELECT betreuer_id FROM themen_betreuer WHERE thema_id=?', (edit_id,))]
             
         aufgabensteller = db.execute('SELECT * FROM aufgabensteller').fetchall()
-        betreuer = db.execute('SELECT * FROM betreuer WHERE aktiv=1').fetchall()
+        betreuer = db.execute('SELECT * FROM betreuer WHERE archiviert=0').fetchall()
         
         # Hydrate betreuer names for display
         themen_list = []
@@ -131,8 +142,8 @@ def tab(name):
             edit_betreuer_ids = [b['betreuer_id'] for b in db.execute('SELECT betreuer_id FROM arbeiten_betreuer WHERE arbeit_id=?', (edit_id,))]
             
         aufgabensteller = db.execute('SELECT * FROM aufgabensteller').fetchall()
-        studenten = db.execute('SELECT * FROM studenten WHERE aktiv=1').fetchall()
-        betreuer = db.execute('SELECT * FROM betreuer WHERE aktiv=1').fetchall()
+        studenten = db.execute('SELECT * FROM studenten WHERE archiviert=0').fetchall()
+        betreuer = db.execute('SELECT * FROM betreuer WHERE archiviert=0').fetchall()
         oberseminare = db.execute('SELECT * FROM oberseminare WHERE archiviert=0 ORDER BY dt').fetchall()
         
         arbeiten_list = []
@@ -149,32 +160,36 @@ def tab(name):
                                betreuer=betreuer, oberseminare=oberseminare, edit_betreuer_ids=edit_betreuer_ids)
 
     elif name == 'archiv':
+        aufgabensteller = db.execute('SELECT * FROM aufgabensteller WHERE archiviert=1').fetchall()
+        betreuer = db.execute('SELECT * FROM betreuer WHERE archiviert=1').fetchall()
+        studenten = db.execute('SELECT * FROM studenten WHERE archiviert=1').fetchall()
+        
         themen = db.execute('SELECT * FROM themen WHERE archiviert=1').fetchall()
         seminare = db.execute('SELECT * FROM oberseminare WHERE archiviert=1').fetchall()
         arbeiten = db.execute('SELECT * FROM abschlussarbeiten WHERE archiviert=1').fetchall()
-        return render_template('archiv.html', themen=themen, seminare=seminare, arbeiten=arbeiten)
+        return render_template('archiv.html', themen=themen, seminare=seminare, arbeiten=arbeiten,
+                               aufgabensteller=aufgabensteller, betreuer=betreuer, studenten=studenten)
 
 # POST Handlers for Add / Edit
 @app.route('/api/aufgabensteller', methods=['POST'])
 def save_aufgabensteller():
     db = get_db()
-    id, name, email = request.form.get('id'), request.form.get('name'), request.form.get('email')
+    id, name, email, web = request.form.get('id'), request.form.get('name'), request.form.get('email'), request.form.get('web')
     if id:
-        db.execute('UPDATE aufgabensteller SET name=?, email=? WHERE id=?', (name, email, id))
+        db.execute('UPDATE aufgabensteller SET name=?, email=?, web=? WHERE id=?', (name, email, web, id))
     else:
-        db.execute('INSERT INTO aufgabensteller (name, email) VALUES (?, ?)', (name, email))
+        db.execute('INSERT INTO aufgabensteller (name, email, web) VALUES (?, ?, ?)', (name, email, web))
     db.commit()
     return tab('aufgabensteller')
 
 @app.route('/api/betreuer', methods=['POST'])
 def save_betreuer():
     db = get_db()
-    id, name, email = request.form.get('id'), request.form.get('name'), request.form.get('email')
-    aktiv = 1 if request.form.get('aktiv') else 0
+    id, name, email, web = request.form.get('id'), request.form.get('name'), request.form.get('email'), request.form.get('web')
     if id:
-        db.execute('UPDATE betreuer SET name=?, email=?, aktiv=? WHERE id=?', (name, email, aktiv, id))
+        db.execute('UPDATE betreuer SET name=?, email=?, web=? WHERE id=?', (name, email, web, id))
     else:
-        db.execute('INSERT INTO betreuer (name, email, aktiv) VALUES (?, ?, ?)', (name, email, aktiv))
+        db.execute('INSERT INTO betreuer (name, email, web) VALUES (?, ?, ?)', (name, email, web))
     db.commit()
     return tab('betreuer')
 
@@ -182,11 +197,10 @@ def save_betreuer():
 def save_studenten():
     db = get_db()
     id, name, email = request.form.get('id'), request.form.get('name'), request.form.get('email')
-    aktiv = 1 if request.form.get('aktiv') else 0
     if id:
-        db.execute('UPDATE studenten SET name=?, email=?, aktiv=? WHERE id=?', (name, email, aktiv, id))
+        db.execute('UPDATE studenten SET name=?, email=? WHERE id=?', (name, email, id))
     else:
-        db.execute('INSERT INTO studenten (name, email, aktiv) VALUES (?, ?, ?)', (name, email, aktiv))
+        db.execute('INSERT INTO studenten (name, email) VALUES (?, ?)', (name, email))
     db.commit()
     return tab('studenten')
 
@@ -269,7 +283,8 @@ def reorder_oberseminar(os_id):
         db.execute('INSERT INTO oberseminar_presentations (oberseminar_id, arbeit_id, sort_order) VALUES (?, ?, ?)',
                    (os_id, a_id, index))
     db.commit()
-    return "" # HTMX doesn't need to swap anything if UI is already sorted
+#    return "" # HTMX doesn't need to swap anything if UI is already sorted
+    return tab('oberseminare')
 
 # Delete / Archive routes
 @app.route('/api/delete/<table_name>/<int:id>', methods=['DELETE'])
@@ -284,7 +299,7 @@ def delete_item(table_name, id):
 @app.route('/api/archive/<table_name>/<int:id>', methods=['POST'])
 def archive_item(table_name, id):
     db = get_db()
-    allowed_tables = ['oberseminare', 'themen', 'abschlussarbeiten']
+    allowed_tables = ['aufgabensteller', 'betreuer', 'studenten', 'oberseminare', 'themen', 'abschlussarbeiten']
     if table_name in allowed_tables:
         db.execute(f'UPDATE {table_name} SET archiviert=1 WHERE id=?', (id,))
         db.commit()
@@ -293,12 +308,31 @@ def archive_item(table_name, id):
 @app.route('/api/dearchive/<table_name>/<int:id>', methods=['POST'])
 def dearchive_item(table_name, id):
     db = get_db()
-    allowed_tables = ['oberseminare', 'themen', 'abschlussarbeiten']
+    allowed_tables = ['aufgabensteller', 'betreuer', 'studenten', 'oberseminare', 'themen', 'abschlussarbeiten']
     if table_name in allowed_tables:
         db.execute(f'UPDATE {table_name} SET archiviert=0 WHERE id=?', (id,))
         db.commit()
     return ""
 
+@app.route('/api/publish/<table_name>', methods=['POST'])
+def publish(table_name):
+    db = get_db()
+    allowed_tables = ['oberseminare', 'themen']
+    if table_name in allowed_tables:
+        return os.popen('uptime').read()
+    return "Not allowed"
+
+@app.route('/api/mailto/<table_name>/<int:id>', methods=['POST'])
+def mailto(table_name, id):
+    db = get_db()
+    allowed_tables = ['oberseminare', 'themen']
+
+    response = make_response()
+    response.headers['HX-Redirect'] = 'mailto:oberseminar@example.com?bcc=stude1@example.com&subject=Oberseminar%20am%205.11.2024&body=Einladung%20zum%20oberseminar%20am'
+    response.status_code = 200
+    return response
+    
+    
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)

@@ -1,10 +1,27 @@
+<h2>Laufende Abschlussarbeiten</h2>
+<table>
+    <tr><th>Titel</th><th>Typ</th><th>PA Angemeldet</th><th>Student</th><th>Betreuer</th><th>Antritt</th><th>Abschluss</th><th>Aktionen</th></tr>
+    {% for r in rows %}
+    <tr>
+        <td>{{ r.titel }}</td><td>{{ r.typ }}</td><td>{{ 'Ja' if r.pa_angemeldet else 'Nein' }}</td>
+        <td>{{ r.student_name }}</td><td>{{ r.betreuer_names }}</td>
+        <td>{{ r.antritts_dt | datetime_de }}</td><td>{{ r.abschluss_dt | datetime_de }}</td>
+        <td>
+            <button class="btn" hx-get="/tab/abschlussarbeiten?edit={{ r.id }}" hx-target="#content">Bearbeiten</button>
+            <button class="btn btn-sec" hx-post="/api/archive/abschlussarbeiten/{{ r.id }}" hx-target="#content">Archivieren</button>
+            <button class="btn btn-danger" hx-delete="/api/delete/abschlussarbeiten/{{ r.id }}" hx-target="#content" hx-confirm="Löschen?">Löschen</button>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<br>
 <div class="form-panel">
-    <h3>{% if edit_item %}Bearbeiten{% else %}Neu anlegen{% endif %}</h3>
+    <h3>{% if edit_item %}Bearbeiten{% else %}Neue Arbeit anlegen{% endif %}</h3>
     <form hx-post="/api/abschlussarbeiten" hx-target="#content">
         <input type="hidden" name="id" value="{{ edit_item.id if edit_item else '' }}">
         
         <label>Typ</label>
-        <select name="typ" onchange="document.getElementById('antrittsvortrag').disabled = (this.value !== 'MA');">
+        <select style="width: 60px;" name="typ" onchange="document.getElementById('antrittsvortrag').disabled = (this.value !== 'MA');">
             <option value="BA" {% if edit_item and edit_item.typ == 'BA' %}selected{% endif %}>BA</option>
             <option value="MA" {% if edit_item and edit_item.typ == 'MA' %}selected{% endif %}>MA</option>
         </select>
@@ -13,7 +30,7 @@
         <label>Titel</label><input type="text" name="titel" value="{{ edit_item.titel if edit_item else '' }}" required>
         
         <label>Student</label>
-        <select name="student_id">
+        <select name="student_id" required>
             <option value="">Bitte wählen...</option>
             {% for s in studenten %}
             <option value="{{ s.id }}" {% if edit_item and edit_item.student_id == s.id %}selected{% endif %}>{{ s.name }}</option>
@@ -21,21 +38,21 @@
         </select>
 
         <label>Aufgabensteller</label>
-        <select name="aufgabensteller_id">
+        <select name="aufgabensteller_id" required>
             <option value="">Bitte wählen...</option>
             {% for a in aufgabensteller %}
             <option value="{{ a.id }}" {% if edit_item and edit_item.aufgabensteller_id == a.id %}selected{% endif %}>{{ a.name }}</option>
             {% endfor %}
         </select>
         
-        <label>Betreuer (Mehrfachauswahl)</label>
+        <label>Betreuer (Mehrfachauswahl möglich)</label>
         <select name="betreuer_ids" multiple size="4">
             {% for b in betreuer %}
             <option value="{{ b.id }}" {% if b.id in edit_betreuer_ids %}selected{% endif %}>{{ b.name }}</option>
             {% endfor %}
         </select>
         
-        <label>Antrittsvortrag (Nur MA)</label>
+        <label>Antrittsvortrag (Nur bei MA)</label>
         <select name="antrittsvortrag_id" id="antrittsvortrag" {% if not edit_item or edit_item.typ != 'MA' %}disabled{% endif %}>
             <option value="">Noch nicht zugewiesen...</option>
             {% for o in oberseminare %}
@@ -55,18 +72,3 @@
         {% if edit_item %}<button type="button" class="btn btn-sec" hx-get="/tab/abschlussarbeiten" hx-target="#content">Abbrechen</button>{% endif %}
     </form>
 </div>
-<table>
-    <tr><th>Titel</th><th>Typ</th><th>PA Angemeldet</th><th>Student</th><th>Betreuer</th><th>Antritt</th><th>Abschluss</th><th>Aktionen</th></tr>
-    {% for r in rows %}
-    <tr>
-        <td>{{ r.titel }}</td><td>{{ r.typ }}</td><td>{{ 'Ja' if r.pa_angemeldet else 'Nein' }}</td>
-        <td>{{ r.student_name }}</td><td>{{ r.betreuer_names }}</td>
-        <td>{{ r.antritts_dt | datetime_de }}</td><td>{{ r.abschluss_dt | datetime_de }}</td>
-        <td>
-            <button class="btn" hx-get="/tab/abschlussarbeiten?edit={{ r.id }}" hx-target="#content">Bearbeiten</button>
-            <button class="btn btn-sec" hx-post="/api/archive/abschlussarbeiten/{{ r.id }}" hx-target="#content">Archivieren</button>
-            <button class="btn btn-danger" hx-delete="/api/delete/abschlussarbeiten/{{ r.id }}" hx-target="#content" hx-confirm="Löschen?">Löschen</button>
-        </td>
-    </tr>
-    {% endfor %}
-</table>

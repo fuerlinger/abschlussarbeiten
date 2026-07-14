@@ -1,27 +1,24 @@
-<div class="form-panel">
-    <h3>{% if edit_item %}Bearbeiten{% else %}Neu anlegen{% endif %}</h3>
-    <form hx-post="/api/oberseminare" hx-target="#content">
-        <input type="hidden" name="id" value="{{ edit_item.id if edit_item else '' }}">
-        <label>Datum / Uhrzeit</label><input type="datetime-local" name="dt" value="{{ edit_item.dt if edit_item else '' }}" required>
-        <label>Ort</label><input type="text" name="location" value="{{ edit_item.location if edit_item else '' }}" required>
-        <label><input type="checkbox" name="sichtbar" class="inline-checkbox" {% if not edit_item or edit_item.sichtbar %}checked{% endif %}> Sichtbar</label>
-        <button type="submit" class="btn">Speichern</button>
-        {% if edit_item %}<button type="button" class="btn btn-sec" hx-get="/tab/oberseminare" hx-target="#content">Abbrechen</button>{% endif %}
-    </form>
-</div>
+<h2>Aktuelle Oberseminare</h2>
 <table>
-    <tr><th>Datum/Uhrzeit</th><th>Ort</th><th>Sichtbar</th><th>Vorträge (Drag & Drop zum Sortieren)</th><th>Aktionen</th></tr>
+    <tr><th>Datum/Uhrzeit</th><th>Ort</th><th><svg xmlns="http://w3.org" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Öffentlich sichtbar?</title>
+  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+  <circle cx="12" cy="12" r="3"></circle>
+</svg></th><th>Vorträge (Drag & Drop zum Sortieren)</th><th>Aktionen</th></tr>
     {% for r in rows %}
     <tr>
         <td>{{ r.dt | datetime_de }}</td><td>{{ r.location }}</td><td>{{ 'Ja' if r.sichtbar else 'Nein' }}</td>
         <td>
-            <form class="sortable-form" hx-post="/api/reorder_oberseminar/{{ r.id }}" hx-trigger="end">
+            <form class="sortable-form" hx-post="/api/reorder_oberseminar/{{ r.id }}" hx-trigger="end" hx-target="#content">
                 <ul class="sortable">
                     {% for pres in r.presentations %}
                     <li>
                         <input type="hidden" name="arbeit_id" value="{{ pres.id }}">
-                        ☰ <b>{{ pres.student_name }}:</b> {{ pres.titel }} 
-                    </li>
+                        ☰ <b>{{ pres.student_name }}:</b> <i>{{ pres.titel }}</i>
+			<br>
+			{{ '(Antrittsvortrag MA)' if pres.antrittsvortrag_id and pres.typ == 'MA' }}
+			{{ '(Abschlussvortrag MA)' if pres.abschlussvortrag_id and pres.typ == 'MA' }}
+			{{ '(Abschlussvortrag BA)' if pres.abschlussvortrag_id and pres.typ == 'BA' }}
+		    </li>
                     {% endfor %}
                 </ul>
             </form>
@@ -30,15 +27,31 @@
             <button class="btn" hx-get="/tab/oberseminare?edit={{ r.id }}" hx-target="#content">Bearbeiten</button>
             <button class="btn btn-sec" hx-post="/api/archive/oberseminare/{{ r.id }}" hx-target="#content" hx-confirm="Wirklich archivieren?">Archivieren</button>
             <button class="btn btn-danger" hx-delete="/api/delete/oberseminare/{{ r.id }}" hx-target="#content" hx-confirm="Wirklich löschen?">Löschen</button>
+
+            <button class="btn btn-mail" hx-post="/api/mailto/oberseminare/{{ r.id }}" hx-target="#content">Email</button>
+
         </td>
     </tr>
     {% endfor %}
 </table>
-
 <script>
     (function(){
         document.querySelectorAll('.sortable').forEach(function(el) {
-            new Sortable(el, { animation: 150, ghostClass: 'ghost' });
+            new Sortable(el, { animation: 150,
+			       ghostClass: 'ghost'
+			     });
         });
     })();
 </script>
+<br>
+<div class="form-panel">
+    <h3>{% if edit_item %}Bearbeiten{% else %}Neues Oberseminar anlegen...{% endif %}</h3>
+    <form hx-post="/api/oberseminare" hx-target="#content">
+        <input type="hidden" name="id" value="{{ edit_item.id if edit_item else '' }}">
+        <label>Datum / Uhrzeit</label><input type="datetime-local" name="dt" value="{{ edit_item.dt if edit_item else '' }}" required>
+        <label>Ort</label><input type="text" name="location" value="{{ edit_item.location if edit_item else '' }}" required>
+        <label><input type="checkbox" name="sichtbar" class="inline-checkbox" {% if not edit_item or edit_item.sichtbar %}checked{% endif %}> Öffentlich sichtbar</label>
+        <button type="submit" class="btn">Speichern</button>
+        {% if edit_item %}<button type="button" class="btn btn-sec" hx-get="/tab/oberseminare" hx-target="#content">Abbrechen</button>{% endif %}
+    </form>
+</div>

@@ -1,0 +1,13 @@
+<h2>Status</h2>
+
+<div class="update-container">
+    <span>Last updated: <strong id="os-display">Never</strong></span>
+    
+    <button class="btn"
+        hx-post="/api/publish/oberseminare" 
+        hx-target="#os-display" 
+        hx-swap="innerHTML">
+        Oberseminare aktualisieren
+    </button>
+</div>
+

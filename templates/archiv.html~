@@ -26,9 +26,9 @@
 
 <h2>Archivierte Studenten</h2>
 <table>
-    <tr><th style="width:8%">ID</th><th>Details</th><th style="width:15%">Aktionen</th></tr>
+    <tr><th style="width:8%">ID</th><th>Name</th><th style="width:15%">Aktionen</th></tr>
     {% for a in studenten %}
-    <tr><td>{{ a.id }}</td><td>{{ a.name }}, {{ a.email }}/td>
+    <tr><td>{{ a.id }}</td><td>{{ a.name }}</td>
       <td><button class="btn btn-rest" hx-post="/api/dearchive/studenten/{{ a.id }}" hx-target="closest tr" " >Wiederherstellen</button></td></tr>
     {% else %}
     <tr><td colspan="3">Keine archivierten Studenten</td></tr>
@@ -39,7 +39,7 @@
 
 <h2>Archivierte Abschlussarbeiten</h2>
 <table>
-    <tr><th style="width:8%">ID</th><th>Details</th><th>Typ</th><th style="width:15%">Aktionen</th></tr>
+    <tr><th style="width:8%">ID</th><th>Titel</th><th>Typ</th><th style="width:15%">Aktionen</th></tr>
     {% for a in arbeiten %}
     <tr><td>{{ a.id }}</td><td>{{ a.titel }}</td><td>{{ a.typ }}</td>
       <td><button class="btn btn-rest" hx-post="/api/dearchive/abschlussarbeiten/{{ a.id }}" hx-target="closest tr" " >Wiederherstellen</button></td></tr>
