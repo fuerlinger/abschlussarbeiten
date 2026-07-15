@@ -1,10 +1,11 @@
 <h2>Laufende Abschlussarbeiten</h2>
 <table>
-    <tr><th>Titel</th><th>Typ</th><th>PA Angemeldet</th><th>Student</th><th>Betreuer</th><th>Antritt</th><th>Abschluss</th><th>Aktionen</th></tr>
+    <tr><th>Aufgabensteller</th><th>Student</th><th>Typ</th><th>Anmeldetag</th><th>Abgabetag</th><th>Betreuer</th><th>Antritt</th><th>Abschluss</th><th>Titel</th><th>Aktionen</th></tr>
     {% for r in rows %}
     <tr>
-        <td>{{ r.titel }}</td><td>{{ r.typ }}</td><td>{{ 'Ja' if r.pa_angemeldet else 'Nein' }}</td>
         <td>{{ r.student_name }}</td><td>{{ r.betreuer_names }}</td>
+	<td>{{ r.titel }}</td><td>{{ r.typ }}</td>
+
         <td>{{ r.antritts_dt | datetime_de }}</td><td>{{ r.abschluss_dt | datetime_de }}</td>
         <td>
             <button class="btn" hx-get="/tab/abschlussarbeiten?edit={{ r.id }}" hx-target="#content">Bearbeiten</button>
@@ -40,7 +41,6 @@
     </div>
 	</div>
 	
-        <label><input type="checkbox" name="pa_angemeldet" class="inline-checkbox" {% if edit_item and edit_item.pa_angemeldet %}checked{% endif %}> Arbeit im PA angemeldet</label>
         <label>Titel</label><input type="text" name="titel" value="{{ edit_item.titel if edit_item else '' }}" required>
         
         <label>Student</label>

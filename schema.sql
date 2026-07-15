@@ -52,7 +52,8 @@ CREATE TABLE IF NOT EXISTS themen_betreuer (
 CREATE TABLE IF NOT EXISTS abschlussarbeiten (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     typ TEXT NOT NULL,
-    pa_angemeldet INTEGER DEFAULT 0,
+    anmeld_dt TEXT,
+    abgabe_dt TEXT,
     aufgabensteller_id INTEGER,
     student_id INTEGER,
     titel TEXT NOT NULL,
