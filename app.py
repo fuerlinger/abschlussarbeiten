@@ -128,7 +128,8 @@ def tab(name):
                                
     elif name == 'abschlussarbeiten':
         rows = db.execute('''SELECT a.*, auf.name as aufgabensteller_name, s.name as student_name,
-                             o1.dt as antritts_dt, o2.dt as abschluss_dt
+                             o1.dt as antritts_dt, o2.dt as abschluss_dt, 
+                             a.anmeldetag_dt as anmeldetag_dt, a.abgabetag_dt as abgabetag_dt
                              FROM abschlussarbeiten a 
                              LEFT JOIN aufgabensteller auf ON a.aufgabensteller_id = auf.id
                              LEFT JOIN studenten s ON a.student_id = s.id
@@ -248,8 +249,8 @@ def save_abschlussarbeiten():
     db = get_db()
     id = request.form.get('id')
     typ = request.form.get('typ')
-    anmeld_dt = request.form.get('anmeldedatum')
-    abgabe_dt = request.form.get('abgabedatum') 
+    anmeldetag_dt = request.form.get('anmeldetag')
+    abgabetag_dt = request.form.get('abgabetag') 
     aufg_id = request.form.get('aufgabensteller_id') or None
     stud_id = request.form.get('student_id') or None
     titel = request.form.get('titel')
@@ -259,15 +260,15 @@ def save_abschlussarbeiten():
     betreuer_ids = request.form.getlist('betreuer_ids')
 
     if id:
-        db.execute('''UPDATE abschlussarbeiten SET typ=?, anmeld_dt=?, abgab_dt=?,
+        db.execute('''UPDATE abschlussarbeiten SET typ=?, anmeldetag_dt=?, abgabetag_dt=?,
                       aufgabensteller_id=?, student_id=?, titel=?, antrittsvortrag_id=?,
                       abschlussvortrag_id=? WHERE id=?''', 
-                      (typ, anmeld_dt, abgabe_dt, aufg_id, stud_id, titel, antritt, abschluss, id))
+                      (typ, anmeldetag_dt, abgabetag_dt, aufg_id, stud_id, titel, antritt, abschluss, id))
     else:
-        cur = db.execute('''INSERT INTO abschlussarbeiten (typ, anmeld_dt, abgabe_dt, aufgabensteller_id, student_id, 
+        cur = db.execute('''INSERT INTO abschlussarbeiten (typ, anmeldetag_dt, abgabetag_dt, aufgabensteller_id, student_id, 
                             titel, antrittsvortrag_id, abschlussvortrag_id) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                            (typ, anmeld_dt, abgabe_dt, aufg_id, stud_id, titel, antritt, abschluss))
+                            (typ, anmeldetag_dt, abgabetag_dt, aufg_id, stud_id, titel, antritt, abschluss))
         id = cur.lastrowid
         
     db.execute('DELETE FROM arbeiten_betreuer WHERE arbeit_id=?', (id,))

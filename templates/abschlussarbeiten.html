@@ -1,17 +1,33 @@
 <h2>Laufende Abschlussarbeiten</h2>
 <table>
-    <tr><th>Aufgabensteller</th><th>Student</th><th>Typ</th><th>Anmeldetag</th><th>Abgabetag</th><th>Betreuer</th><th>Antritt</th><th>Abschluss</th><th>Titel</th><th>Aktionen</th></tr>
-    {% for r in rows %}
-    <tr>
-        <td>{{ r.student_name }}</td><td>{{ r.betreuer_names }}</td>
-	<td>{{ r.titel }}</td><td>{{ r.typ }}</td>
+  <tr>
+    <th title="Aufgabensteller / Prüfer (Kürzel)">Aufg.</th>
+    <th>Student</th>
+    <th>Typ</th>
+    <th>Anmeldetag</th>
+    <th>Abgabetag</th>
+    <th>Betreuer</th>
+    <th title="Oberseminar für Antrittsvortrag">Antritt</th>
+    <th title="Oberseminar für Abschlussvortrag">Abschluss</th>
+    <th>Titel</th>
+    <th>Aktionen</th></tr>
 
-        <td>{{ r.antritts_dt | datetime_de }}</td><td>{{ r.abschluss_dt | datetime_de }}</td>
-        <td>
-            <button class="btn" hx-get="/tab/abschlussarbeiten?edit={{ r.id }}" hx-target="#content">Bearbeiten</button>
-            <button class="btn btn-sec" hx-post="/api/archive/abschlussarbeiten/{{ r.id }}" hx-target="#content">Archivieren</button>
-            <button class="btn btn-danger" hx-delete="/api/delete/abschlussarbeiten/{{ r.id }}" hx-target="#content" hx-confirm="Löschen?">Löschen</button>
-        </td>
+    {% for r in rows %}
+  <tr>
+    <td>{{ r.aufgabensteller_name }}</td>
+    <td>{{ r.student_name }}</td>
+    <td>{{ r.typ }}</td>
+    <td>{{ r.anmeldetag_dt }}</td>
+    <td>{{ r.abgabetag_dt }}</td>
+    <td>{{ r.betreuer_names }}</td>
+    <td>{{ r.antritts_dt | datetime_de }}</td>
+    <td>{{ r.abschluss_dt | datetime_de }}</td>
+    <td>{{ r.titel }}</td>
+    <td>
+      <button class="btn" hx-get="/tab/abschlussarbeiten?edit={{ r.id }}" hx-target="#content">Bearbeiten</button>
+      <button class="btn btn-sec" hx-post="/api/archive/abschlussarbeiten/{{ r.id }}" hx-target="#content">Archivieren</button>
+      <button class="btn btn-danger" hx-delete="/api/delete/abschlussarbeiten/{{ r.id }}" hx-target="#content" hx-confirm="Löschen?">Löschen</button>
+    </td>
     </tr>
     {% endfor %}
 </table>
@@ -29,15 +45,15 @@
 
 	<div style="display: flex; gap: 15px; margin-bottom: 15px;">
     <div style="flex: 1; display: flex; flex-direction: column;">
-        <label for="anmeldedatum">Anmeldedatum</label>
-        <input type="date" id="anmeldedatum" name="anmeldedatum" 
-               value="{{ edit_item.anmeldedatum if edit_item else '' }}">
+        <label for="anmeldetag">Anmeldetag</label>
+        <input type="date" id="anmeldetag" name="anmeldetag" 
+               value="{{ edit_item.anmeldetag_dt if edit_item else '' }}">
     </div>
 
     <div style="flex: 1; display: flex; flex-direction: column;">
-        <label for="abgabedatum">Abgabedatum</label>
-        <input type="date" id="abgabedatum" name="abgabedatum" 
-               value="{{ edit_item.abgabedatum if edit_item else '' }}">
+        <label for="abgabetag">Abgabetag</label>
+        <input type="date" id="abgabetag" name="abgabetag" 
+               value="{{ edit_item.abgabetag_dt if edit_item else '' }}">
     </div>
 	</div>
 	
