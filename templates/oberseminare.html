@@ -1,12 +1,12 @@
 <h2>Aktuelle Oberseminare</h2>
 <table>
-    <tr><th>Datum/Uhrzeit</th><th>Ort</th><th><svg xmlns="http://w3.org" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Öffentlich sichtbar?</title>
+    <tr><th>Datum/Uhrzeit</th><th>Ort</th><th style="text-align:center"><svg xmlns="http://w3.org" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Öffentlich sichtbar?</title>
   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
   <circle cx="12" cy="12" r="3"></circle>
 </svg></th><th>Vorträge (Drag & Drop zum Sortieren)</th><th>Aktionen</th></tr>
     {% for r in rows %}
     <tr>
-        <td>{{ r.dt | datetime_de }}</td><td>{{ r.location }}</td><td>{{ 'Ja' if r.sichtbar else 'Nein' }}</td>
+        <td>{{ r.dt | datetime_de }}</td><td>{{ r.location }}</td><td style="text-align:center"">{{ 'Ja' if r.sichtbar else 'Nein' }}</td>
         <td>
             <form class="sortable-form" hx-post="/api/reorder_oberseminar/{{ r.id }}" hx-trigger="end" hx-target="#content">
                 <ul class="sortable">
@@ -28,7 +28,7 @@
             <button class="btn btn-sec" hx-post="/api/archive/oberseminare/{{ r.id }}" hx-target="#content" hx-confirm="Wirklich archivieren?">Archivieren</button>
             <button class="btn btn-danger" hx-delete="/api/delete/oberseminare/{{ r.id }}" hx-target="#content" hx-confirm="Wirklich löschen?">Löschen</button>
 
-            <button class="btn btn-mail" hx-post="/api/mailto/oberseminare/{{ r.id }}" hx-target="#content">Email</button>
+            <button class="btn btn-mail" hx-post="/api/mailto/oberseminare/{{ r.id }}" hx-target="#content">Email...</button>
 
         </td>
     </tr>

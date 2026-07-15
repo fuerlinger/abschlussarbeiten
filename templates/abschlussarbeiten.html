@@ -21,11 +21,25 @@
         <input type="hidden" name="id" value="{{ edit_item.id if edit_item else '' }}">
         
         <label>Typ</label>
-        <select style="width: 60px;" name="typ" onchange="document.getElementById('antrittsvortrag').disabled = (this.value !== 'MA');">
+        <select style="width: 80px;" name="typ" onchange="document.getElementById('antrittsvortrag').disabled = (this.value !== 'MA');">
             <option value="BA" {% if edit_item and edit_item.typ == 'BA' %}selected{% endif %}>BA</option>
             <option value="MA" {% if edit_item and edit_item.typ == 'MA' %}selected{% endif %}>MA</option>
         </select>
-        
+
+	<div style="display: flex; gap: 15px; margin-bottom: 15px;">
+    <div style="flex: 1; display: flex; flex-direction: column;">
+        <label for="anmeldedatum">Anmeldedatum</label>
+        <input type="date" id="anmeldedatum" name="anmeldedatum" 
+               value="{{ edit_item.anmeldedatum if edit_item else '' }}">
+    </div>
+
+    <div style="flex: 1; display: flex; flex-direction: column;">
+        <label for="abgabedatum">Abgabedatum</label>
+        <input type="date" id="abgabedatum" name="abgabedatum" 
+               value="{{ edit_item.abgabedatum if edit_item else '' }}">
+    </div>
+	</div>
+	
         <label><input type="checkbox" name="pa_angemeldet" class="inline-checkbox" {% if edit_item and edit_item.pa_angemeldet %}checked{% endif %}> Arbeit im PA angemeldet</label>
         <label>Titel</label><input type="text" name="titel" value="{{ edit_item.titel if edit_item else '' }}" required>
         
