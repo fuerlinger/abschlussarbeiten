@@ -2,10 +2,13 @@
 import sqlite3
 import os
 import markdown
+import io
 from datetime import datetime
-from flask import Flask, render_template, request, g, redirect, make_response
+from flask import Flask, render_template, request, g, redirect, make_response, send_file, session
 
 app = Flask(__name__)
+app.secret_key = 'mnm_abschlussarbeiten'
+
 DATABASE = 'mnm.db'
 
 def get_db():
@@ -175,14 +178,42 @@ def tab(name):
 @app.route('/api/aufgabensteller', methods=['POST'])
 def save_aufgabensteller():
     db = get_db()
-    id, name, email, web = request.form.get('id'), request.form.get('name'), request.form.get('email'), request.form.get('web')
-    if id:
-        db.execute('UPDATE aufgabensteller SET name=?, email=?, web=? WHERE id=?', (name, email, web, id))
-    else:
-        db.execute('INSERT INTO aufgabensteller (name, email, web) VALUES (?, ?, ?)', (name, email, web))
-    db.commit()
-    return tab('aufgabensteller')
+    id = request.form.get('id')
+    name = request.form.get('name')
+    email = request.form.get('email')
+    web = request.form.get('web')
 
+    try: 
+        if id:
+            db.execute('UPDATE aufgabensteller SET name=?, email=?, web=? WHERE id=?',
+                       (name, email, web, id))
+        else:
+            db.execute('INSERT INTO aufgabensteller (name, email, web) VALUES (?, ?, ?)',
+                       (name, email, web))
+            
+        db.commit()
+        return tab('aufgabensteller')
+
+    except sqlite3.IntegrityError as e:
+        # Check the error message to see if it's a UNIQUE constraint failure
+        
+        if 'UNIQUE constraint failed' in str(e):
+            error_msg = "A record with this name or email already exists."
+            
+        else:
+            error_msg = "A database error occurred."
+            
+        error_html = f"""
+        <div id="form-errors" hx-swap-oob="true" style="color: red; margin-bottom: 10px;">
+            {error_msg}
+        </div>
+        """
+
+    response = make_response(error_html)
+    response.headers['HX-Reswap'] = 'none'
+    response.status_code = 200
+    return response
+        
 @app.route('/api/betreuer', methods=['POST'])
 def save_betreuer():
     db = get_db()
@@ -335,7 +366,42 @@ def mailto(table_name, id):
     response.headers['HX-Redirect'] = 'mailto:oberseminar@example.com?bcc=stude1@example.com&subject=Oberseminar%20am%205.11.2024&body=Einladung%20zum%20oberseminar%20am'
     response.status_code = 200
     return response
+
+@app.route('/api/bibtex/<table_name>/<int:id>', methods=['POST'])
+def bibtex(table_name, id):
+    db = get_db()
+    allowed_tables = ['abschlussarbeiten']
+
+    generated_text = "Short summary for department."
     
+    session['temp_bibtex_data'] = generated_text
+    
+    # 3. Redirect without needing query parameters
+    response = make_response()
+    response.headers['HX-Redirect'] = '/download-bibtex'
+    return response
+    
+
+@app.route('/download-bibtex')
+def download_bibtex():
+    # 1. Use session.pop() to retrieve the data and remove it from the 
+    # cookie immediately so we don't bloat the user's browser data.
+    file_content = session.pop('temp_bibtex_data', None)
+    
+    if not file_content:
+        return "No bibtex data found", 404
+        
+    mem = io.BytesIO()
+    mem.write(file_content.encode('utf-8'))
+    mem.seek(0)
+    
+    return send_file(
+        mem,
+        as_attachment=True,
+        download_name='publication.bib',
+        mimetype='text/plain'
+    )
+
     
 if __name__ == '__main__':
     init_db()

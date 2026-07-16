@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS aufgabensteller (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    email TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
     web TEXT,
     archiviert INTEGER DEFAULT 0
 );
