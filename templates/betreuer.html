@@ -17,7 +17,7 @@
     <form hx-post="/api/betreuer" hx-target="#content">
         <input type="hidden" name="id" value="{{ edit_item.id if edit_item else '' }}">
         <label>Name</label>
-        <input type="text" name="name" value="{{ edit_item.name if edit_item else '' }}" required>
+        <input type="text" name="name" value="{{ edit_item.name if edit_item else '' }}" {% if edit_item %}autofocus{% else %}{% endif %} required>
         <label>Email</label>
         <input type="email" name="email" value="{{ edit_item.email if edit_item else '' }}" required>
 	<label>Web</label>

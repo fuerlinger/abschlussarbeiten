@@ -3,7 +3,7 @@
     <tr><th style="width:20%">Name</th><th style="width:25%">Email</th><th>Web</th><th style="width:25%">Aktionen</th></tr>
     {% for r in rows %}
     <tr>
-        <td>{{ r.name }}</td><td>{{ r.email }}</td><td><a href="{{ r.web }}">{{ r.web }}</a></td>
+        <td>{{ r.name }}</td><td>{{ r.email }}</td><td>{{ r.web | urlize(32) }}</td>
         <td>
           <button class="btn" hx-get="/tab/aufgabensteller?edit={{ r.id }}" hx-target="#content">Bearbeiten</button>
 	  <button class="btn btn-sec" hx-post="/api/archive/aufgabensteller/{{ r.id }}"  hx-confirm="Aufgabensteller wirklich archivieren?" hx-target="#content">Archivieren</button>
@@ -18,7 +18,7 @@
       <div id="form-errors"></div>
       <input type="hidden" name="id" value="{{ edit_item.id if edit_item else '' }}">
 	<label>Name</label>
-        <input type="text" name="name" value="{{ edit_item.name if edit_item else '' }}" required>
+        <input type="text" name="name" value="{{ edit_item.name if edit_item else '' }}" {% if edit_item %}autofocus{% else %}{% endif %} required> 
         <label>Email</label>
         <input type="email" name="email" value="{{ edit_item.email if edit_item else '' }}" required>
 	<label>Web</label>

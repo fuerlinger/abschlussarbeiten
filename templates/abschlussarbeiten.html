@@ -1,20 +1,63 @@
 <h2>Laufende Abschlussarbeiten</h2>
-<table>
-  <tr>
-    <th title="Aufgabensteller / Prüfer (Kürzel)">Aufg.</th>
-    <th>Student</th>
-    <th>Typ</th>
-    <th>Anmeldetag</th>
-    <th>Abgabetag</th>
-    <th>Betreuer</th>
-    <th title="Oberseminar für Antrittsvortrag">Antritt</th>
-    <th title="Oberseminar für Abschlussvortrag">Abschluss</th>
-    <th>Titel</th>
-    <th>Aktionen</th></tr>
 
+<script>
+  function sortTable(columnIndex) {
+  const table = document.getElementById("AbschlussarbeitenTable");
+  const tbody = table.tBodies[0];
+  // Convert NodeList of rows to an Array so we can use .sort()
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+  
+  // Track the current sorting direction on the table element
+  // Default to ascending, toggle if clicked again
+  const currentDir = table.dataset.sortDir === "asc" ? "desc" : "asc";
+  table.dataset.sortDir = currentDir;
+  
+  // Multiplier to flip between ascending (1) and descending (-1)
+  const direction = currentDir === "asc" ? 1 : -1;
+
+  rows.sort((rowA, rowB) => {
+    // Get the text from the specific column cells
+    const cellA = rowA.children[columnIndex].textContent.trim();
+    const cellB = rowB.children[columnIndex].textContent.trim();
+
+    // Check if the values are numbers for proper numeric sorting
+    const isNumeric = !isNaN(cellA) && !isNaN(cellB) && cellA !== "" && cellB !== "";
+
+    if (isNumeric) {
+      // Sort mathematically
+      return (Number(cellA) - Number(cellB)) * direction;
+    } else {
+      // Sort alphabetically
+      return cellA.localeCompare(cellB) * direction;
+    }
+  });
+
+  // Re-append the sorted rows back into the tbody
+  // Note: append automatically moves existing elements, so no need to delete them first
+  tbody.append(...rows);
+}
+</script>
+
+<button class="btn btn-mail" hx-post="" hx-target="#content">Tabelle als CSV herunterladen...</button>
+
+<table id="AbschlussarbeitenTable">
+  <thead>
+  <tr>
+    <th onclick="sortTable(0)" title="Aufgabensteller / Prüfer (Kürzel)">Aufg.</th>
+    <th onclick="sortTable(1)">Student</th>
+    <th onclick="sortTable(2)">Typ</th>
+    <th onclick="sortTable(3)">Anmeldetag</th>
+    <th onclick="sortTable(4)">Abgabetag</th>
+    <th onclick="sortTable(5)">Betreuer</th>
+    <th onclick="sortTable(6)" title="Oberseminar für Antrittsvortrag">Antritt</th>
+    <th onclick="sortTable(7)" title="Oberseminar für Abschlussvortrag">Abschluss</th>
+    <th onclick="sortTable(8)">Titel</th>
+    <th>Aktionen</th></tr>
+  </thead>
+  <tbody>
     {% for r in rows %}
   <tr>
-    <td>{{ r.aufgabensteller_name }}</td>
+    <td title="{{ r.aufgabensteller_name }}">{{ r.aufgabensteller_name | initials() }}</td>
     <td>{{ r.student_name }}</td>
     <td>{{ r.typ }}</td>
     <td>{{ r.anmeldetag_dt }}</td>
@@ -22,14 +65,15 @@
     <td>{{ r.betreuer_names }}</td>
     <td>{{ r.antritts_dt | datetime_de }}</td>
     <td>{{ r.abschluss_dt | datetime_de }}</td>
-    <td>{{ r.titel }}</td>
+    <td title="{{ r.titel }}">{{ r.titel | truncate(30) }}</td>
     <td>
       <button class="btn" hx-get="/tab/abschlussarbeiten?edit={{ r.id }}" hx-target="#content">Bearbeiten</button>
       <button class="btn btn-sec" hx-post="/api/archive/abschlussarbeiten/{{ r.id }}" hx-target="#content">Archivieren</button>
       <button class="btn btn-danger" hx-delete="/api/delete/abschlussarbeiten/{{ r.id }}" hx-target="#content" hx-confirm="Löschen?">Löschen</button>
     </td>
     </tr>
-    {% endfor %}
+  {% endfor %}
+  </tbody>
 </table>
 <br>
 <div class="form-panel">
@@ -57,7 +101,7 @@
     </div>
 	</div>
 	
-        <label>Titel</label><input type="text" name="titel" value="{{ edit_item.titel if edit_item else '' }}" required>
+        <label>Titel</label><input type="text" name="titel" value="{{ edit_item.titel if edit_item else '' }}" {% if edit_item %}autofocus{% else %}{% endif %} required> 
         
         <label>Student</label>
         <select name="student_id" required>

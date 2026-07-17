@@ -14,6 +14,17 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff;}
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
+	th {
+  cursor: pointer;
+  user-select: none; /* Prevents text highlighting on double-click */
+  padding: 8px;
+  background-color: #f9f9f9;
+}
+
+th:hover {
+  background-color: #e0e0e0;
+}
+
         .inactive { color: #888; background-color: #f9f9f9; text-decoration: line-through; }
         .form-panel { width: 600px; background: #dfedd4; border: 1px solid #ccc; padding-left: 15px; padding-right: 15px; padding-bottom: 15px; margin-bottom: 20px; border-radius: 4px; }
         .form-panel input, .form-panel select, .form-panel textarea { margin-bottom: 10px; padding: 5px; width: 100%; box-sizing: border-box; }

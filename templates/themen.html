@@ -22,7 +22,7 @@
     <h3>{% if edit_item %}Bearbeiten{% else %}Neu anlegen{% endif %}</h3>
     <form hx-post="/api/themen" hx-target="#content">
         <input type="hidden" name="id" value="{{ edit_item.id if edit_item else '' }}">
-        <label>Titel</label><input type="text" name="titel" value="{{ edit_item.titel if edit_item else '' }}" required>
+        <label>Titel</label><input type="text" name="titel" value="{{ edit_item.titel if edit_item else '' }}" {% if edit_item %}autofocus{% else %}{% endif %} required>
         
         <label><input type="checkbox" name="ba" class="inline-checkbox" {% if edit_item and edit_item.ba %}checked{% endif %}> BA</label>
         <label><input type="checkbox" name="ma" class="inline-checkbox" {% if edit_item and edit_item.ma %}checked{% endif %}> MA</label>

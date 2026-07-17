@@ -6,7 +6,7 @@
 </svg></th><th>Vorträge (Drag & Drop zum Sortieren)</th><th>Aktionen</th></tr>
     {% for r in rows %}
     <tr>
-        <td>{{ r.dt | datetime_de }}</td><td>{{ r.location }}</td><td style="text-align:center"">{{ 'Ja' if r.sichtbar else 'Nein' }}</td>
+        <td>{{ r.dt }}</td><td>{{ r.location }}</td><td style="text-align:center"">{{ 'Ja' if r.sichtbar else 'Nein' }}</td>
         <td>
             <form class="sortable-form" hx-post="/api/reorder_oberseminar/{{ r.id }}" hx-trigger="end" hx-target="#content">
                 <ul class="sortable">
@@ -48,7 +48,7 @@
     <h3>{% if edit_item %}Bearbeiten{% else %}Neues Oberseminar anlegen...{% endif %}</h3>
     <form hx-post="/api/oberseminare" hx-target="#content">
         <input type="hidden" name="id" value="{{ edit_item.id if edit_item else '' }}">
-        <label>Datum / Uhrzeit</label><input type="datetime-local" name="dt" value="{{ edit_item.dt if edit_item else '' }}" required>
+        <label>Datum / Uhrzeit</label><input type="datetime-local" name="dt" value="{{ edit_item.dt if edit_item else '' }}" {% if edit_item %}autofocus{% else %}{% endif %} required>
         <label>Ort</label><input type="text" name="location" value="{{ edit_item.location if edit_item else '' }}" required>
         <label><input type="checkbox" name="sichtbar" class="inline-checkbox" {% if not edit_item or edit_item.sichtbar %}checked{% endif %}> Öffentlich sichtbar</label>
         <button type="submit" class="btn">Speichern</button>

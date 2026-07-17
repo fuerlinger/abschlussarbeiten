@@ -46,6 +46,32 @@ def render_markdown(text):
     if not text: return ""
     return markdown.markdown(text)
 
+@app.template_filter('initials')
+def initials(text):
+    if not text: return ""
+    # 1. Define a set of common titles/particles to ignore (lowercased for easy matching)
+    ignored_words = {
+        "prof", "dr", "habil", "ing", "msc", "bsc", "phd", "pd",
+        "mr", "mrs", "ms", "jr", "sr",
+        "von", "van", "de", "der", "zu"
+    }
+    
+    # 2. Clean the string: remove punctuation like periods and split into words
+    # e.g., "Prof. Dr. Dieter Kanz" -> ["Prof", "Dr", "Dieter", "Kanz"]
+    cleaned_string = text.replace(".", "").replace(",", "")
+    words = cleaned_string.split()
+    
+    # 3. Filter out the ignored titles/particles
+    name_parts = [
+        word for word in words 
+        if word.lower() not in ignored_words
+    ]
+    
+    # 4. Extract the first letter of each remaining word and capitalize it
+    initials = "".join(part[0].upper() for part in name_parts if part)
+    
+    return initials
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -198,13 +224,13 @@ def save_aufgabensteller():
         # Check the error message to see if it's a UNIQUE constraint failure
         
         if 'UNIQUE constraint failed' in str(e):
-            error_msg = "A record with this name or email already exists."
+            error_msg = "Ein Eintrag mit dieser Email-Adresse existiert bereits!"
             
         else:
-            error_msg = "A database error occurred."
+            error_msg = "Datenbank Fehler."
             
         error_html = f"""
-        <div id="form-errors" hx-swap-oob="true" style="color: red; margin-bottom: 10px;">
+        <div id="form-errors" hx-swap-oob="true" style="font-weight:bold; color: red; margin-bottom: 10px;">
             {error_msg}
         </div>
         """
