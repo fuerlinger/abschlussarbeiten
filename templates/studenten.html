@@ -18,7 +18,7 @@
         <input type="hidden" name="id" value="{{ edit_item.id if edit_item else '' }}">
         <label>Name</label>
         <input type="text" name="name" value="{{ edit_item.name if edit_item else '' }}" {% if edit_item %}autofocus{% else %}{% endif %} required>
-        <label>Email</label>
+        <label>Email (nur @campus.lmu.de Adressen)</label>
         <input type="email" name="email" value="{{ edit_item.email if edit_item else '' }}" required>
         <button type="submit" class="btn">Speichern</button>
         {% if edit_item %}<button type="button" class="btn btn-sec" hx-get="/tab/studenten" hx-target="#content">Abbrechen</button>{% endif %}

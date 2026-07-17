@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sqlite3
 import os
+import csv
 import markdown
 import io
 from datetime import datetime
@@ -99,12 +100,12 @@ def tab(name):
         return render_template('aufgabensteller.html', rows=rows, edit_item=edit_item)
         
     elif name == 'betreuer':
-        rows = db.execute('SELECT * FROM betreuer WHERE archiviert=0').fetchall()
+        rows = db.execute('SELECT * FROM betreuer WHERE archiviert=0 ORDER BY name ASC').fetchall()
         edit_item = db.execute('SELECT * FROM betreuer WHERE id=?', (edit_id,)).fetchone() if edit_id else None
         return render_template('betreuer.html', rows=rows, edit_item=edit_item)
 
     elif name == 'studenten':
-        rows = db.execute('SELECT * FROM studenten WHERE archiviert=0').fetchall()
+        rows = db.execute('SELECT * FROM studenten WHERE archiviert=0 ORDER BY name ASC').fetchall()
         edit_item = db.execute('SELECT * FROM studenten WHERE id=?', (edit_id,)).fetchone() if edit_id else None
         return render_template('studenten.html', rows=rows, edit_item=edit_item)
         
@@ -158,7 +159,7 @@ def tab(name):
     elif name == 'abschlussarbeiten':
         rows = db.execute('''SELECT a.*, auf.name as aufgabensteller_name, s.name as student_name,
                              o1.dt as antritts_dt, o2.dt as abschluss_dt, 
-                             a.anmeldetag_dt as anmeldetag_dt, a.abgabetag_dt as abgabetag_dt
+                             a.anmeldetag as anmeldetag, a.abgabetag as abgabetag, a.notiz as notiz
                              FROM abschlussarbeiten a 
                              LEFT JOIN aufgabensteller auf ON a.aufgabensteller_id = auf.id
                              LEFT JOIN studenten s ON a.student_id = s.id
@@ -172,8 +173,8 @@ def tab(name):
             edit_betreuer_ids = [b['betreuer_id'] for b in db.execute('SELECT betreuer_id FROM arbeiten_betreuer WHERE arbeit_id=?', (edit_id,))]
             
         aufgabensteller = db.execute('SELECT * FROM aufgabensteller').fetchall()
-        studenten = db.execute('SELECT * FROM studenten WHERE archiviert=0').fetchall()
-        betreuer = db.execute('SELECT * FROM betreuer WHERE archiviert=0').fetchall()
+        studenten = db.execute('SELECT * FROM studenten WHERE archiviert=0 ORDER BY name ASC').fetchall()
+        betreuer = db.execute('SELECT * FROM betreuer WHERE archiviert=0 ORDER BY name ASC').fetchall()
         oberseminare = db.execute('SELECT * FROM oberseminare WHERE archiviert=0 ORDER BY dt').fetchall()
         
         arbeiten_list = []
@@ -184,6 +185,26 @@ def tab(name):
                                     WHERE ab.arbeit_id=?''', (ar['id'],)).fetchall()
             ar['betreuer_names'] = ", ".join([b['name'] for b in b_names])
             arbeiten_list.append(ar)
+
+        # --- NEW CSV LOGIC ---
+        if request.args.get('format') == 'csv':
+            # Create an in-memory string buffer
+            si = io.StringIO()
+            
+            if arbeiten_list:
+                # Dynamically get the column headers from the first dictionary's keys
+                keys = arbeiten_list[0].keys()
+                writer = csv.DictWriter(si, fieldnames=keys)
+                
+                writer.writeheader()
+                writer.writerows(arbeiten_list)
+            
+            # Create the HTTP response with the CSV data
+            response = make_response(si.getvalue())
+            response.headers["Content-Disposition"] = "attachment; filename=abschlussarbeiten.csv"
+            response.headers["Content-type"] = "text/csv"
+            return response
+        # ---------------------            
 
         return render_template('abschlussarbeiten.html', rows=arbeiten_list, edit_item=edit_item,
                                aufgabensteller=aufgabensteller, studenten=studenten, 
@@ -306,26 +327,27 @@ def save_abschlussarbeiten():
     db = get_db()
     id = request.form.get('id')
     typ = request.form.get('typ')
-    anmeldetag_dt = request.form.get('anmeldetag')
-    abgabetag_dt = request.form.get('abgabetag') 
+    anmeldetag = request.form.get('anmeldetag')
+    abgabetag = request.form.get('abgabetag')
     aufg_id = request.form.get('aufgabensteller_id') or None
     stud_id = request.form.get('student_id') or None
     titel = request.form.get('titel')
+    notiz = request.form.get('notiz')
     antritt = request.form.get('antrittsvortrag_id') if typ == 'MA' else None
     antritt = antritt if antritt else None
     abschluss = request.form.get('abschlussvortrag_id') or None
     betreuer_ids = request.form.getlist('betreuer_ids')
 
     if id:
-        db.execute('''UPDATE abschlussarbeiten SET typ=?, anmeldetag_dt=?, abgabetag_dt=?,
-                      aufgabensteller_id=?, student_id=?, titel=?, antrittsvortrag_id=?,
+        db.execute('''UPDATE abschlussarbeiten SET typ=?, anmeldetag=?, abgabetag=?,
+                      aufgabensteller_id=?, student_id=?, titel=?, notiz=?, antrittsvortrag_id=?,
                       abschlussvortrag_id=? WHERE id=?''', 
-                      (typ, anmeldetag_dt, abgabetag_dt, aufg_id, stud_id, titel, antritt, abschluss, id))
+                      (typ, anmeldetag, abgabetag, aufg_id, stud_id, titel, notiz, antritt, abschluss, id))
     else:
-        cur = db.execute('''INSERT INTO abschlussarbeiten (typ, anmeldetag_dt, abgabetag_dt, aufgabensteller_id, student_id, 
-                            titel, antrittsvortrag_id, abschlussvortrag_id) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                            (typ, anmeldetag_dt, abgabetag_dt, aufg_id, stud_id, titel, antritt, abschluss))
+        cur = db.execute('''INSERT INTO abschlussarbeiten (typ, anmeldetag, abgabetag, aufgabensteller_id, student_id, 
+                            titel, notiz, antrittsvortrag_id, abschlussvortrag_id) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                            (typ, anmeldetag, abgabetag, aufg_id, stud_id, titel, notiz, antritt, abschluss))
         id = cur.lastrowid
         
     db.execute('DELETE FROM arbeiten_betreuer WHERE arbeit_id=?', (id,))

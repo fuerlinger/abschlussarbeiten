@@ -38,8 +38,6 @@
 }
 </script>
 
-<button class="btn btn-mail" hx-post="" hx-target="#content">Tabelle als CSV herunterladen...</button>
-
 <table id="AbschlussarbeitenTable">
   <thead>
   <tr>
@@ -52,6 +50,7 @@
     <th onclick="sortTable(6)" title="Oberseminar für Antrittsvortrag">Antritt</th>
     <th onclick="sortTable(7)" title="Oberseminar für Abschlussvortrag">Abschluss</th>
     <th onclick="sortTable(8)">Titel</th>
+    <th onclick="sortTable(9)">Notiz</th>
     <th>Aktionen</th></tr>
   </thead>
   <tbody>
@@ -60,12 +59,13 @@
     <td title="{{ r.aufgabensteller_name }}">{{ r.aufgabensteller_name | initials() }}</td>
     <td>{{ r.student_name }}</td>
     <td>{{ r.typ }}</td>
-    <td>{{ r.anmeldetag_dt }}</td>
-    <td>{{ r.abgabetag_dt }}</td>
+    <td>{{ r.anmeldetag }}</td>
+    <td>{{ r.abgabetag }}</td>
     <td>{{ r.betreuer_names }}</td>
     <td>{{ r.antritts_dt | datetime_de }}</td>
     <td>{{ r.abschluss_dt | datetime_de }}</td>
     <td title="{{ r.titel }}">{{ r.titel | truncate(30) }}</td>
+    <td title="{{ r.notiz }}">{{ r.notiz  }}</td>
     <td>
       <button class="btn" hx-get="/tab/abschlussarbeiten?edit={{ r.id }}" hx-target="#content">Bearbeiten</button>
       <button class="btn btn-sec" hx-post="/api/archive/abschlussarbeiten/{{ r.id }}" hx-target="#content">Archivieren</button>
@@ -75,6 +75,7 @@
   {% endfor %}
   </tbody>
 </table>
+<a href="tab/abschlussarbeiten?format=csv" class="btn btn-primary">Download as CSV</a>
 <br>
 <div class="form-panel">
     <h3>{% if edit_item %}Bearbeiten{% else %}Neue Arbeit anlegen{% endif %}</h3>
@@ -91,13 +92,13 @@
     <div style="flex: 1; display: flex; flex-direction: column;">
         <label for="anmeldetag">Anmeldetag</label>
         <input type="date" id="anmeldetag" name="anmeldetag" 
-               value="{{ edit_item.anmeldetag_dt if edit_item else '' }}">
+               value="{{ edit_item.anmeldetag if edit_item else '' }}">
     </div>
 
     <div style="flex: 1; display: flex; flex-direction: column;">
         <label for="abgabetag">Abgabetag</label>
         <input type="date" id="abgabetag" name="abgabetag" 
-               value="{{ edit_item.abgabetag_dt if edit_item else '' }}">
+               value="{{ edit_item.abgabetag if edit_item else '' }}">
     </div>
 	</div>
 	
@@ -141,6 +142,9 @@
             <option value="{{ o.id }}" {% if edit_item and edit_item.abschlussvortrag_id == o.id %}selected{% endif %}>{{ o.dt | datetime_de }} - {{ o.location }}</option>
             {% endfor %}
         </select>
+
+        <label>Notizen (zB Wunschtermine)</label>
+        <textarea name="notiz" rows="3">{{ edit_item.notiz if edit_item else '' }}</textarea>	
         
         <button type="submit" class="btn">Speichern</button>
         {% if edit_item %}<button type="button" class="btn btn-sec" hx-get="/tab/abschlussarbeiten" hx-target="#content">Abbrechen</button>{% endif %}
