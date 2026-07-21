@@ -1,0 +1,65 @@
+import sqlite3
+import csv
+import os
+
+# Configuration
+DB_NAME = '../mnm.db'
+
+# Map your database table names to their corresponding CSV file names
+CSV_MAPPING = {
+    'aufgabensteller': 'aufgabensteller.csv',
+    'betreuer': 'betreuer.csv',
+    'studenten': 'studenten.csv',
+    'oberseminare': 'oberseminare.csv'
+}
+
+def import_csv_to_sqlite():
+    # Connect to the existing SQLite database
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        print(f"Successfully connected to {DB_NAME}")
+    except sqlite3.Error as e:
+        print(f"Error connecting to database: {e}")
+        return
+
+    # Loop through each table and its corresponding CSV file
+    for table_name, csv_file in CSV_MAPPING.items():
+        if not os.path.exists(csv_file):
+            print(f"⚠️ Warning: File '{csv_file}' not found. Skipping table '{table_name}'.")
+            continue
+
+        with open(csv_file, mode='r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            headers = reader.fieldnames
+            
+            if not headers:
+                print(f"⚠️ Warning: '{csv_file}' is empty or missing headers. Skipping.")
+                continue
+
+            # Dynamically construct the SQL INSERT statement based on CSV headers
+            # e.g., INSERT INTO studenten (name, email) VALUES (?, ?)
+            columns_string = ', '.join(headers)
+            placeholders = ', '.join(['?'] * len(headers))
+            sql_query = f"INSERT OR IGNORE INTO {table_name} ({columns_string}) VALUES ({placeholders})"
+
+            # Extract data from the CSV into a list of tuples
+            data_to_insert = []
+            for row in reader:
+                data_to_insert.append(tuple(row[col] for col in headers))
+
+            # Execute the bulk insert
+            try:
+                cursor.executemany(sql_query, data_to_insert)
+                print(f"✅ Successfully inserted {len(data_to_insert)} rows into '{table_name}'.")
+            except sqlite3.Error as e:
+                print(f"❌ Error inserting data into '{table_name}': {e}")
+
+    # Commit the transactions and close the connection
+    conn.commit()
+    conn.close()
+    print("Database connection closed. Import finished.")
+
+if __name__ == '__main__':
+    import_csv_to_sqlite()
+    
